@@ -8,20 +8,108 @@ from nonebot.params import EventMessage
 from src.libraries.maimaidx_music import *
 from src.libraries.qwq_function import *
 
+#根据游戏ID获取人数，可以前往网站的“机厅”中查看具体的游戏ID
+getGP=on_regex(r"(吾悦麦麦)$")
+@getGP.handle()
+async def _(event: Event, message: Message = EventMessage()):
+    try:
+        payload = {"gameId":1003}
+        r= await getGamePlayer(payload)
+        if r['code']==-1:
+            await getGP.send("没人上报，似乎没有人！")
+        elif r['code']==0:
+            if r['message']=="waiting":
+                await getGP.send("当前人数正在变动，请稍后查询！")
+            else:
+                print("你的gameId不正确。")
+        else:
+            await getGP.send("当前人数："+str(r['data']['player'])+"人\n上报时间："+str(r['data']['time']).replace("T"," "))
+
+    except Exception as e:
+        print(e)
+        await getGP.send("指令实现过程出错，请联系管理员。")
+
+incGP=on_regex(r"(吾悦麦麦\+\+)$")
+@incGP.handle()
+async def _(event: Event, message: Message = EventMessage()):
+    try:
+        payload = {"gameId":1003}
+        r= await incGamePlayer(payload)
+        if r['code']==0:
+            if r['message']=="waiting":
+                await incGP.send("当前人数正在变动，请稍后再发出指令！")
+            elif r['message']=="size":
+                await incGP.send("人数超过了20人，真的有这么多吗！")
+            else:
+                print("你的gameId不正确。")
+        else:
+            await incGP.send("成功增加，当前人数："+str(r['data']['player'])+"人")
+    except Exception as e:
+        print(e)
+        await incGP.send("指令实现过程出错，请联系管理员。")
+
+decGP=on_regex(r"(吾悦麦麦\-\-)$")
+@decGP.handle()
+async def _(event: Event, message: Message = EventMessage()):
+    try:
+        payload = {"gameId":1003}
+        r= await decGamePlayer(payload)
+        if r['code']==0:
+            if r['message']=="waiting":
+                await decGP.send("当前人数正在变动，请稍后再发出指令！")
+            elif r['message']=="size":
+                await decGP.send("当前没有人游玩，不能再减了！")
+            else:
+                print("你的gameId不正确。")
+        elif r['code']==1:
+            await decGP.send("成功增加，当前人数："+str(r['data']['player'])+"人")
+    except Exception as e:
+        print(e)
+        await decGP.send("指令实现过程出错，请联系管理员。")
+
+
+setGP=on_regex(r"^(吾悦麦麦)([0-9][0-9]?)(人)")
+@setGP.handle()
+async def _(event: Event, message: Message = EventMessage()):
+    try:
+        inf =re.match("^(吾悦麦麦)([0-9][0-9]?)(人)", str(message)).groups()
+        player = int(inf[1])
+        if player >20:
+            await setGP.send("人数超过了20人，真的有这么多吗！")
+            return
+        elif player <0:
+            await setGP.send("人数小于了0人，有鬼！")
+            return
+        payload = {"gameId":1003,"player":player}
+        r= await setGamePlayer(payload)
+        if r['code']==0:
+            if r['message']=="waiting":
+                await setGP.send("当前人数正在变动，请稍后再发出指令！")
+            elif r['message']=="size":
+                await setGP.send("人数不太对吧！")
+            else:
+                print("你的gameId不正确。")
+        elif r['code']==1:
+            await setGP.send("成功更改，当前人数："+str(r['data']['player'])+"人")
+
+    except Exception as e:
+        print(e)
+        await setGP.send("指令实现过程出错，请联系管理员。")
+
+
 qwqQQ = on_regex(r"qwq验证.*")
 @qwqQQ.handle()
 async def _(event: Event, message: Message = EventMessage()):
     try:
-        payload = {"username": re.match("验证(.*)", str(message)).groups()[0], 'qq': event.get_user_id()}
+        payload = {"username": re.match("(qwq验证)(.*)", str(message)).groups()[1], 'qq': event.get_user_id()}
         response = await verifyQQ(payload)
-        await qwqQQ.send(response.getMessage())
+        await qwqQQ.send(response['message'])
     except Exception as e:
         print(e)
         await qwqQQ.send("指令实现过程出错，请联系管理员。")
 
 
 getSongIDName = on_regex(r"是什么歌$")
-
 
 @getSongIDName.handle()
 async def _(event: Event, message: Message = EventMessage()):
@@ -49,7 +137,6 @@ async def _(event: Event, message: Message = EventMessage()):
         await getSongIDName.send("指令实现过程出错，请联系管理员。")
 
 addAlias = on_regex(r"添加别称 [0-9]* .*")
-
 
 @addAlias.handle()
 async def _(event: Event, message: Message = EventMessage()):
