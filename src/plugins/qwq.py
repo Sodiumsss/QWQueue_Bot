@@ -110,30 +110,51 @@ async def _(event: Event, message: Message = EventMessage()):
 
 
 getSongIDName = on_regex(r"是什么歌$")
-
 @getSongIDName.handle()
 async def _(event: Event, message: Message = EventMessage()):
     try:
         aliasName = re.match("(.*)(是什么歌)$", str(message)).groups()[0]
         payload = {"text": aliasName}
-        response: list = await getSongByAlias(payload)
-        listLen = len(response)
+        response = await getSongByAlias(payload)
+        songList =response['data']
+        listLen = len(songList)
         if listLen == 0:
             await getSongIDName.send("没有歌曲拥有此别称！")
-        elif listLen == 1:
-            # 调用自己的函数，生成并输出歌曲图片
-            songId = str(response[0]['songId'])
-            songPhoto = "这是一张ID为" + songId + "叫做" + total_list.by_id(songId).title + "的歌曲的图片！"
-            #
+            return
+        if response['code']==1:
+            if listLen == 1:
+                # 调用自己的函数，生成并输出歌曲图片
+                songId = str(songList[0]['songId'])
+                songPhoto = "这是一张ID为" + songId + "叫做" + total_list.by_id(songId).title + "的歌曲的图片！"
+                #
+                await getSongIDName.send(songPhoto)
+            else:
+                myStr = "以下是拥有\"" + aliasName + "\"别称的歌曲：\n"
+                for i in songList:
+                    myStr += "ID：" + str(i['songId']) + ",歌曲名：《" + total_list.by_id(str(i['songId'])).title + "》\n"
+                await getSongIDName.send(myStr)
+        elif response['code']==2:
+            # 模糊搜索到了结果
+            myStr = f"没有直接找到拥有\"{aliasName}\"别称的歌曲，以下是别称中含有\"" + aliasName + "\"文字的歌曲：\n"
+            myAlias = dict()
+            myID = dict()
+            for i in songList:
+                if myAlias.get(str(i['songId'])) is None:
+                    myAlias[str(i['songId'])] = f"《{str(i['text'])}》"
+                else:
+                    myAlias[str(i['songId'])] += f",《{str(i['text'])}》"
 
-            await getSongIDName.send(songPhoto)
-        else:
-            myStr = "以下是拥有\"" + aliasName + "\"别称的歌曲：\n"
-            for i in response:
-                myStr += "ID：" + str(i['songId']) + ",歌曲名：《" + total_list.by_id(str(i['songId'])).title + "》\n"
+            for i in songList:
+                if myID.get(str(i['songId'])) is None:
+                    myStr += "ID：" + str(i['songId']) + "\n歌曲名：《" + total_list.by_id(str(i['songId'])).title \
+                             + f"》\n别称：{myAlias[str(i['songId'])]}\n\n"
+                    myID[str(i['songId'])]=True
+
             await getSongIDName.send(myStr)
+        else:
+            await getSongIDName.send("指令实现过程出错，请联系管理员。")
     except Exception as e:
-        print(e)
+        print(f"异常{e}")
         await getSongIDName.send("指令实现过程出错，请联系管理员。")
 
 addAlias = on_regex(r"添加别称 [0-9]* .*")

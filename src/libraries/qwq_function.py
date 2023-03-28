@@ -43,7 +43,7 @@ async def getSongByAlias(payload):
     async with aiohttp.request("POST", "http://" + url + ":" + port + "/dev/alias/getSongByAlias",
                                json=payload, headers={"devToken": devToken}) as resp:
         p = await resp.json()
-        return p['data']
+        return p
 
 
 async def getSongAliases(payload):
