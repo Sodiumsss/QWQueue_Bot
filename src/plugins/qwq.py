@@ -29,6 +29,31 @@ async def _(event: Event, message: Message = EventMessage()):
         print(e)
         await getGP.send("指令实现过程出错，请联系管理员。")
 
+incGPS=on_regex(r"^(吾悦麦麦加)([0-9][0-9]?)")
+@incGPS.handle()
+async def _(event: Event, message: Message = EventMessage()):
+    try:
+        inf =re.match("^(吾悦麦麦加)([0-9][0-9]?)", str(message)).groups()
+        player = int(inf[1])
+        if player <0:
+            await setGP.send("人数小于了0人，有鬼！")
+            return
+        payload = {"gameId":1003,"player":player}
+        r= await incGamePlayers(payload)
+        if r['code']==0:
+            if r['message']=="waiting":
+                await incGPS.send("当前人数正在变动，请稍后再发出指令！")
+            elif r['message']=="size":
+                await incGPS.send("人数不太对吧！")
+            else:
+                print("你的gameId不正确。")
+        elif r['code']==1:
+            await incGPS.send("成功更改，当前人数："+str(r['data']['player'])+"人")
+
+    except Exception as e:
+        print(e)
+        await incGPS.send("指令实现过程出错，请联系管理员。")
+
 incGP=on_regex(r"(吾悦麦麦\+\+)$")
 @incGP.handle()
 async def _(event: Event, message: Message = EventMessage()):

@@ -27,6 +27,12 @@ async def incGamePlayer(payload):
                                json=payload, headers={"devToken": devToken}) as resp:
         p = await resp.json()
         return p
+
+async def incGamePlayers(payload):
+    async with aiohttp.request("POST", "http://" + url + ":" + port + "/dev/game/incGamePlayers",
+                               json=payload, headers={"devToken": devToken}) as resp:
+        p = await resp.json()
+        return p
 async def setGamePlayer(payload):
     async with aiohttp.request("POST", "http://" + url + ":" + port + "/dev/game/setGamePlayer",
                                json=payload, headers={"devToken": devToken}) as resp:
