@@ -44,7 +44,11 @@ async def decGamePlayer(payload):
                                json=payload, headers={"devToken": devToken}) as resp:
         p = await resp.json()
         return p
-
+async def decGamePlayers(payload):
+    async with aiohttp.request("POST", "http://" + url + ":" + port + "/dev/game/decGamePlayers",
+                               json=payload, headers={"devToken": devToken}) as resp:
+        p = await resp.json()
+        return p
 async def getSongByAlias(payload):
     async with aiohttp.request("POST", "http://" + url + ":" + port + "/dev/alias/getSongByAlias",
                                json=payload, headers={"devToken": devToken}) as resp:
