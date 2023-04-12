@@ -6,7 +6,6 @@ import aiohttp
 # 请填写正确的信息。
 devToken = "12345678910"
 local = False
-
 url = "localhost" if local else "server.qwq.ski"
 pre = "http://" if local else "https://"
 port = "6325" if local else ""
