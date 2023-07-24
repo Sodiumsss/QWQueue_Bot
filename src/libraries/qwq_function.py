@@ -11,6 +11,12 @@ pre = "http://" if local else "https://"
 port = "6325" if local else ""
 
 
+async def signByQQ(payload):
+    async with aiohttp.request("POST", pre + url + ":" + port + "/dev/QQ/signByQQ",
+                               json=payload, headers={"devToken": devToken}) as resp:
+        p = await resp.json()
+        return p
+
 async def verifyQQ(payload):
     async with aiohttp.request("POST", pre + url + ":" + port + "/dev/QQ/verifyQQ",
                                json=payload, headers={"devToken": devToken}) as resp:

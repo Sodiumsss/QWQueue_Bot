@@ -159,6 +159,20 @@ async def _(event: Event, message: Message = EventMessage()):
         await qwqQQ.send("指令实现过程出错，请联系管理员。")
 
 
+
+signByQQ = on_regex(r"qwq签到.*")
+@signByQQ.handle()
+async def _(event: Event, message: Message = EventMessage()):
+    try:
+        payload = {"username": re.match("(qwq签到)(.*)", str(message)).groups()[1], 'qq': event.get_user_id()}
+        response = await signByQQ(payload)
+        await signByQQ.send(response['message'])
+    except Exception as e:
+        print(e)
+        await signByQQ.send("指令实现过程出错，请联系管理员。")
+
+
+
 getSongIDName = on_regex(r"是什么歌$")
 @getSongIDName.handle()
 async def _(event: Event, message: Message = EventMessage()):
