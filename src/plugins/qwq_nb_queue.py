@@ -112,42 +112,6 @@ async def query_all_games():
     
     return "\n".join(results) if results else "暂无数据"
 
-async def parse_command(text):
-    """解析指令并返回操作结果"""
-    # 先找到地点别名
-    if re.match(r'^(机厅|jt)(几|j|几人)$', text):
-        print("识别为查询所有机厅")
-        return await query_all_games()
-    place = find_alias(text)
-    
-    if not place:
-        return None
-    
-    # 剩余部分作为操作指令
-    remainder = text[len(place):].strip()
-    
-    # 处理查询指令
-    if remainder in ['几', 'j', '几人']:
-        game_id = alias_map[place]
-        return await game_query(game_id)
-    
-    # 处理数字指令
-    match = re.match(r'([+-]?)(\d+)$', remainder)
-    
-    if match:
-        sign, number = match.groups()
-        people = int(number)
-        
-        game_id = alias_map[place]
-        
-        if sign == '+':
-            return await game_add(game_id, people)
-        elif sign == '-':
-            return await game_minus(game_id, people)
-        else:
-            return await game_modify(game_id, people)
-    return None
-
 queue_cmd = on_regex(
     r'^(?:(?P<place>h|海|王者|农|n|迪卡丘|星河|盒|万象汇|汇|酷咔库|库|k|酷玩猩球|猩球|提|t|爱琴海)\s*'
     r'(?:(?P<query_people>几|j)|(?P<sign>[+-]?)?\s*(?P<people>\d+))?'
